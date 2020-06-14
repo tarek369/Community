@@ -1,60 +1,65 @@
 #########################################################################
-# Title:            Community: Coder                                    #
-# Author(s):        astroMD                                             #
+# Title:            Community: yourls Role                           #
+# Author(s):        l3uddz, desimaniac                                  #
 # URL:              https://github.com/Cloudbox/Community               #
-# Docker Image(s):  codercom/code-server                                #
+# Docker Image(s):  yourls                                              #
 # --                                                                    #
 #         Part of the Cloudbox project: https://cloudbox.works          #
 #########################################################################
 #                   GNU General Public License v3.0                     #
 #########################################################################
 ---
-- name: "Setting CloudFlare DNS Record"
+- name: MariaDB Role
+  include_role:
+    name: mariadb
+
+- name: "Set DNS Record on CloudFlare"
   include_role:
     name: cloudflare-dns
   vars:
-    record: coder
+    record: yourls
   when: cloudflare_enabled
 
 - name: Stop and remove any existing containers
   docker_container: "name={{ item }} state=absent"
   with_items:
-    - coder
+    - yourls
 
 - name: Create required directories
   file: "path={{ item }} state=directory mode=0775 owner={{ user.name }} group={{ user.name }}"
   with_items:
-    - /opt/coder
+    - /opt/yourls
 
-- name: Create and start coder container
+- name: Create and start yourls container
   docker_container:
-    name: coder
-    image: "codercom/code-server"
+    name: yourls
+    image: "yourls"
     pull: yes
-    user: "{{ uid }}:{{ gid }}"
-    published_ports:
-      - "127.0.0.1:8143:8080"
     env:
       TZ: "{{ tz }}"
       PUID: "{{ uid }}"
       PGID: "{{ gid }}"
-      PASSWORD: "{{ user.pass }}"
-      VIRTUAL_HOST: "coder.{{ user.domain }}"
-      VIRTUAL_PORT: "8080"
-      LETSENCRYPT_HOST: "coder.{{ user.domain }}"
+      VIRTUAL_HOST: "yourls.{{ user.domain }}"
+      VIRTUAL_PORT: "80"
+      LETSENCRYPT_HOST: "yourls.{{ user.domain }}"
       LETSENCRYPT_EMAIL: "{{ user.email }}"
+      YOURLS_DB_HOST: "mariadb"
+      YOURLS_DB_NAME: "yourls"
+      YOURLS_DB_USER: "root"
+      YOURLS_DB_PASS: "password321"
+      YOURLS_SITE: "https://yourls.tzelf.com"
+      YOURLS_PRIVATE: "true"
+
     volumes:
-      - "/home/{{ user.name }}/workspaces:/home/coder/project"
+      - "/opt/yourls/conf:/config"
+      - "/opt/yourls/data:/data"
       - "/mnt:/mnt"
-      - "/opt:/host_opt"
-      - "/home/{{ user.name }}:/home/coder/host"
-        # command: "--allow-http"
     labels:
       "com.github.cloudbox.cloudbox_managed": "true"
     networks:
       - name: cloudbox
         aliases:
-          - coder
+          - yourls
     purge_networks: yes
     restart_policy: unless-stopped
     state: started
