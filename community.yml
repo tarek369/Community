@@ -60,6 +60,7 @@
     - { role: minecraft, tags: ['minecraft'] }
     - { role: monitorr, tags: ['monitorr'] }
     - { role: mylar, tags: ['mylar'] }
+    - { role: n8n, tags: ['n8n'] }
     - { role: nextcloud, tags: ['nextcloud'] }
     - { role: nowshowing, tags: ['nowshowing'] }
     - { role: nzbhydra, tags: ['nzbhydra'] }
