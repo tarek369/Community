@@ -72,6 +72,7 @@
     - { role: radarrx, tags: ['radarrx'] }
     - { role: resilio-sync, tags: ['resilio-sync'] }
     - { role: rocketchat, tags: ['rocketchat'] }
+    - { role: shlink, tags: ['shlink'] }
     - { role: sickchill, tags: ['sickchill'] }
     - { role: sonarrx, tags: ['sonarrx'] }
     - { role: speedtest, tags: ['speedtest'] }
@@ -88,4 +89,5 @@
     - { role: watchtower, tags: ['watchtower'] }
     - { role: wordpress, tags: ['wordpress'] }
     - { role: xteve, tags: ['xteve'] }
+    - { role: yourls, tags: ['yourls'] }
     - { role: znc, tags: ['znc'] }

@@ -1,8 +1,8 @@
 #########################################################################
-# Title:            Community: Coder                                    #
-# Author(s):        astroMD                                             #
+# Title:            Community: shlink                                  #
+# Author(s):        atilling                                            #
 # URL:              https://github.com/Cloudbox/Community               #
-# Docker Image(s):  codercom/code-server                                #
+# Docker Image(s):  shlinkio/shlink                                     #
 # --                                                                    #
 #         Part of the Cloudbox project: https://cloudbox.works          #
 #########################################################################
@@ -13,48 +13,46 @@
   include_role:
     name: cloudflare-dns
   vars:
-    record: coder
+    record: shlink
   when: cloudflare_enabled
 
-- name: Stop and remove any existing containers
-  docker_container: "name={{ item }} state=absent"
-  with_items:
-    - coder
+- name: Stop and remove any existing container
+  docker_container:
+    name: shlink
+    state: absent
 
-- name: Create required directories
+- name: Create shlink directories
   file: "path={{ item }} state=directory mode=0775 owner={{ user.name }} group={{ user.name }}"
   with_items:
-    - /opt/coder
+    - /opt/shlink
 
-- name: Create and start coder container
+- name: Create and start container
   docker_container:
-    name: coder
-    image: "codercom/code-server"
+    name: shlink
+    image: shlinkio/shlink:stable
     pull: yes
-    user: "{{ uid }}:{{ gid }}"
     published_ports:
-      - "127.0.0.1:8143:8080"
+      - "127.0.0.1:8080:8080"
     env:
       TZ: "{{ tz }}"
-      PUID: "{{ uid }}"
-      PGID: "{{ gid }}"
-      PASSWORD: "{{ user.pass }}"
-      VIRTUAL_HOST: "coder.{{ user.domain }}"
+      USER_ID: "{{ uid }}"
+      GROUP_ID: "{{ gid }}"
+      VIRTUAL_HOST: "shlink.{{ user.domain }}"
       VIRTUAL_PORT: "8080"
-      LETSENCRYPT_HOST: "coder.{{ user.domain }}"
+      LETSENCRYPT_HOST: "shlink.{{ user.domain }}"
       LETSENCRYPT_EMAIL: "{{ user.email }}"
+      SHORT_DOMAIN_SCHEMA: "https"
+      SHORT_DOMAIN_HOST: "shlink.{{ user.domain }}"
+      GEOLITE_LICENSE_KEY: "kjh23ljkbndskj345"
     volumes:
-      - "/home/{{ user.name }}/workspaces:/home/coder/project"
+      - "/opt/shlink:/etc/shlink/config/params"
       - "/mnt:/mnt"
-      - "/opt:/host_opt"
-      - "/home/{{ user.name }}:/home/coder/host"
-        # command: "--allow-http"
     labels:
       "com.github.cloudbox.cloudbox_managed": "true"
     networks:
       - name: cloudbox
         aliases:
-          - coder
+          - shlink
     purge_networks: yes
     restart_policy: unless-stopped
     state: started
