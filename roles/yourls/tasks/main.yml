@@ -47,12 +47,11 @@
       YOURLS_DB_NAME: "yourls"
       YOURLS_DB_USER: "root"
       YOURLS_DB_PASS: "password321"
-      YOURLS_SITE: "https://yourls.tzelf.com"
+      YOURLS_SITE: "https://yourls.{{ user.domain }}"
       YOURLS_PRIVATE: "true"
 
     volumes:
-      - "/opt/yourls/conf:/config"
-      - "/opt/yourls/data:/data"
+      - "/opt/yourls/conf:/var/www/"
       - "/mnt:/mnt"
     labels:
       "com.github.cloudbox.cloudbox_managed": "true"
