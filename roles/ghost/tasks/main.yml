@@ -1,0 +1,56 @@
+#########################################################################
+# Title:            Community: Ghost                                     #
+# Author(s):        Tarek                                               #
+# URL:              https://github.com/Cloudbox/Community               #
+# Docker Image(s):  ghost                                               #
+# --                                                                    #
+#         Part of the Cloudbox project: https://cloudbox.works          #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: "Setting CloudFlare DNS Record"
+  include_role:
+    name: cloudflare-dns
+  vars:
+    record: ghost
+  when: cloudflare_enabled
+
+
+- name: Stop and remove any existing container
+  docker_container:
+    name: ghost
+    state: absent
+
+- name: Create ghost directories
+  file: "path={{ item }} state=directory mode=0775 owner={{ user.name }} group={{ user.name }}"
+  with_items:
+    - /opt/ghost
+
+- name: Create and start container
+  docker_container:
+    name: ghost
+    image: ghost:alpine
+    pull: yes
+    published_ports:
+      - "127.0.0.1:2368:2368"
+    env:
+      TZ: "{{ tz }}"
+      PUID: "{{ uid }}"
+      PGID: "{{ gid }}"
+      VIRTUAL_HOST: "ghost.{{ user.domain }}"
+      VIRTUAL_PORT: "2368"
+      LETSENCRYPT_HOST: "ghost.{{ user.domain }}"
+      LETSENCRYPT_EMAIL: "{{ user.email }}"
+    volumes:
+      - "/opt/ghost:/var/lib/ghost"
+      - "/mnt:/mnt"
+    labels:
+      "com.github.cloudbox.cloudbox_managed": "true"
+    networks:
+      - name: cloudbox
+        aliases:
+          - ghost
+    purge_networks: yes
+    restart_policy: unless-stopped
+    state: started
