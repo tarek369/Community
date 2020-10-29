@@ -1,0 +1,60 @@
+#########################################################################
+# Title:            Community: beehive                                  #
+# Author(s):        Tarek                                               #
+# URL:              https://github.com/Cloudbox/Community               #
+# Docker Image(s):  fribbledom/beehive                                  #
+# --                                                                    #
+#         Part of the Cloudbox project: https://cloudbox.works          #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: "Setting CloudFlare DNS Record"
+  include_role:
+    name: cloudflare-dns
+  vars:
+    record: beehive
+  when: cloudflare_enabled
+
+- name: Stop and remove any existing container
+  docker_container:
+    name: beehive
+    state: absent
+
+- name: Create beehive directories
+  file: "path={{ item }} state=directory mode=0775 owner={{ user.name }} group={{ user.name }}"
+  with_items:
+    - /opt/beehive
+
+- name: Set default_volumes variable
+  set_fact:
+    default_volumes:
+      - "/opt/beehive/beehive.conf:/conf/beehive.conf"
+      - "/mnt:/mnt"
+
+- name: Create and start container
+  docker_container:
+    name: beehive
+    image: fribbledom/beehive
+    pull: yes
+    published_ports:
+      - "8181:8181"
+    env:
+      TZ: "{{ tz }}"
+      PUID: "{{ uid }}"
+      PGID: "{{ gid }}"
+      VIRTUAL_HOST: "beehive.{{ user.domain }}"
+      VIRTUAL_PORT: "8181"
+      LETSENCRYPT_HOST: "beehive.{{ user.domain }}"
+      LETSENCRYPT_EMAIL: "{{ user.email }}"
+      UMASK_SET: "002"
+      CANONICAL_URL: "https://beehive.{{ user.domain }}"
+    labels:
+      "com.github.cloudbox.cloudbox_managed": "true"
+    networks:
+      - name: cloudbox
+        aliases:
+          - beehive
+    purge_networks: yes
+    restart_policy: unless-stopped
+    state: started
