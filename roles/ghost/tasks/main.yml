@@ -1,66 +1,58 @@
 #########################################################################
-# Title:            Community: yourls Role                           #
-# Author(s):        l3uddz, desimaniac                                  #
+# Title:            Community: Ghost                                     #
+# Author(s):        Tarek                                               #
 # URL:              https://github.com/Cloudbox/Community               #
-# Docker Image(s):  yourls                                              #
+# Docker Image(s):  ghost                                               #
 # --                                                                    #
 #         Part of the Cloudbox project: https://cloudbox.works          #
 #########################################################################
 #                   GNU General Public License v3.0                     #
 #########################################################################
 ---
-- name: MariaDB Role
-  include_role:
-    name: mariadb
-
-- name: "Set DNS Record on CloudFlare"
+- name: "Setting CloudFlare DNS Record"
   include_role:
     name: cloudflare-dns
   vars:
-    record: yourls
+    record: ghost
   when: cloudflare_enabled
 
-- name: Stop and remove any existing containers
-  docker_container: "name={{ item }} state=absent"
-  with_items:
-    - yourls
 
-- name: Create required directories
+- name: Stop and remove any existing container
+  docker_container:
+    name: ghost
+    state: absent
+
+- name: Create ghost directories
   file: "path={{ item }} state=directory mode=0775 owner={{ user.name }} group={{ user.name }}"
   with_items:
-    - /opt/yourls
+    - /opt/ghost
 
-- name: Create and start yourls container
+- name: Create and start container
   docker_container:
-    name: yourls
-    image: "yourls"
+    name: ghost
+    image: ghost:alpine
     pull: yes
+    published_ports:
+      - "127.0.0.1:2368:2368"
     env:
       TZ: "{{ tz }}"
       PUID: "{{ uid }}"
       PGID: "{{ gid }}"
-      VIRTUAL_HOST: "yourls.{{ user.domain }}"
-      VIRTUAL_PORT: "80"
-      LETSENCRYPT_HOST: "yourls.{{ user.domain }}"
+      VIRTUAL_HOST: "ghost.{{ user.domain }}"
+      VIRTUAL_PORT: "2368"
+      LETSENCRYPT_HOST: "ghost.{{ user.domain }}"
       LETSENCRYPT_EMAIL: "{{ user.email }}"
-      YOURLS_DB_HOST: "mariadb"
-      YOURLS_DB_NAME: "yourls"
-      YOURLS_DB_USER: "root"
-      YOURLS_DB_PASS: "password321"
-      YOURLS_SITE: "https://yourls.{{ user.domain }}"
-      YOURLS_PRIVATE: "true"
-      YOURLS_USER: "{{ user.name }}"
-      YOURLS_PASS: "{{ user.pass }}"
+      URL: "ghost.{{ user.domain }}"
 
     volumes:
-      - "/opt/yourls:/var/www/html/"
+      - "/opt/ghost:/var/lib/ghost/content"
       - "/mnt:/mnt"
     labels:
       "com.github.cloudbox.cloudbox_managed": "true"
     networks:
       - name: cloudbox
         aliases:
-          - yourls
+          - ghost
     purge_networks: yes
     restart_policy: unless-stopped
     state: started

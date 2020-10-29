@@ -46,6 +46,7 @@
     - { role: glances, tags: ['glances'] }
     - { role: goplaxt, tags: ['goplaxt'] }
     - { role: gotify, tags: ['gotify'] }
+    - { role: ghost, tags: ['ghost'] }
     - { role: guacamole, tags: ['guacamole'] }
     - { role: handbrake, tags: ['handbrake'] }
     - { role: healthchecks, tags: ['healthchecks'] }
@@ -68,8 +69,12 @@
     - { role: minecraft, tags: ['minecraft'] }
     - { role: monitorr, tags: ['monitorr'] }
     - { role: mylar, tags: ['mylar'] }
+<<<<<<< HEAD
     - { role: mylar3, tags: ['mylar3'] }
     - { role: navidrome, tags: ['navidrome'] }
+=======
+    - { role: n8n, tags: ['n8n'] }
+>>>>>>> 8b27f61f9e3edabd3c7cc8be6154be34ca70219c
     - { role: nextcloud, tags: ['nextcloud'] }
     - { role: nowshowing, tags: ['nowshowing'] }
     - { role: nzbhydra, tags: ['nzbhydra'] }
