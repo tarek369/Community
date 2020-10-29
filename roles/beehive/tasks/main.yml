@@ -26,17 +26,13 @@
   with_items:
     - /opt/beehive
 
-- name: Set default_volumes variable
-  set_fact:
-    default_volumes:
-      - "/opt/beehive/beehive.conf:/conf/beehive.conf"
-      - "/mnt:/mnt"
-
 - name: Create and start container
   docker_container:
     name: beehive
     image: fribbledom/beehive
     pull: yes
+    volumes:
+      - "/opt/beehive:/conf"
     published_ports:
       - "8181:8181"
     env:
