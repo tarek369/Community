@@ -1,0 +1,53 @@
+#########################################################################
+# Title:            Community: browserless                                  #
+# Author(s):        Tarek                                               #
+# URL:              https://github.com/Cloudbox/Community               #
+# Docker Image(s):  browserless/chrome                                  #
+# --                                                                    #
+#         Part of the Cloudbox project: https://cloudbox.works          #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: "Setting CloudFlare DNS Record"
+  include_role:
+    name: cloudflare-dns
+  vars:
+    record: browserless
+  when: cloudflare_enabled
+
+- name: Stop and remove any existing container
+  docker_container:
+    name: browserless
+    state: absent
+
+- name: Create browserless directories
+  file: "path={{ item }} state=directory mode=0775 owner={{ user.name }} group={{ user.name }}"
+  with_items:
+    - /opt/browserless
+
+- name: Create and start container
+  docker_container:
+    name: browserless
+    image: browserless/chrome
+    pull: yes
+    published_ports:
+      - "3000:3000"
+    env:
+      TZ: "{{ tz }}"
+      PUID: "{{ uid }}"
+      PGID: "{{ gid }}"
+      VIRTUAL_HOST: "browserless.{{ user.domain }}"
+      VIRTUAL_PORT: "3000"
+      LETSENCRYPT_HOST: "browserless.{{ user.domain }}"
+      LETSENCRYPT_EMAIL: "{{ user.email }}"
+      UMASK_SET: "002"
+    labels:
+      "com.github.cloudbox.cloudbox_managed": "true"
+    networks:
+      - name: cloudbox
+        aliases:
+          - browserless
+    purge_networks: yes
+    restart_policy: unless-stopped
+    state: started
