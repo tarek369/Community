@@ -42,6 +42,7 @@
       LETSENCRYPT_HOST: "browserless.{{ user.domain }}"
       LETSENCRYPT_EMAIL: "{{ user.email }}"
       UMASK_SET: "002"
+      ENABLE_API_GET: 'true'
     labels:
       "com.github.cloudbox.cloudbox_managed": "true"
     networks:
